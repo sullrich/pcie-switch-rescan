@@ -1,6 +1,6 @@
-# Fix Missing NICs and NVMe on RK3588 + PCIe Switch HATs
+# Fix Missing NICs and NVMe on Rock 5C / RK3588 with PCIe Switch HATs
 
-A kernel module that fixes PCIe device detection on RK3588 boards using PCIe switches like the ASMedia ASM2806.
+A kernel module that fixes PCIe device detection on Rock 5C and other RK3588 boards using PCIe switches like the ASMedia ASM2806.
 
 If you're running a Radxa Dual 2.5G Router HAT (or similar PCIe switch HAT) on a Rock 5C, Rock 5B, or other RK3588-based board and your NICs or NVMe drive aren't showing up at boot — this is probably what you need.
 
@@ -106,7 +106,7 @@ The DWC (DesignWare) PCIe controller's probe path in `pcie-dw-rockchip.c` calls 
 
 This is arguably a kernel bug — `pci_rescan_bus()` should write bridge windows to hardware, not just track them internally. But since `CONFIG_PCIE_ROCKCHIP_DW=y` (built-in, not a module), we can't patch the driver without rebuilding the entire kernel. This module is a targeted fix that works with stock Armbian kernels.
 
-## Performance
+## Performance (Rock 5C)
 
 Benchmarks from a Rock 5C with the Radxa Dual 2.5G Router HAT. The NVMe drive is a TEAMGROUP TM8FP6512G (512GB, DRAM-less) connected through the ASM2806 switch at PCIe Gen3 x1 (the switch only provides a single lane per downstream port). All tests run with fio using the libaio engine and direct I/O.
 
