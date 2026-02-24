@@ -106,6 +106,10 @@ The DWC (DesignWare) PCIe controller's probe path in `pcie-dw-rockchip.c` calls 
 
 This is arguably a kernel bug — `pci_rescan_bus()` should write bridge windows to hardware, not just track them internally. But since `CONFIG_PCIE_ROCKCHIP_DW=y` (built-in, not a module), we can't patch the driver without rebuilding the entire kernel. This module is a targeted fix that works with stock Armbian kernels.
 
+## Authorship
+
+This module was developed by Claude (Anthropic) with direction and testing by Scott Ullrich. The root cause analysis, kernel debugging, and iterative fix development were done collaboratively in a single session — Scott provided the hardware and steered the investigation, Claude wrote the code and dug through PCI subsystem internals.
+
 ## License
 
 GPL-2.0 — same as the Linux kernel.
