@@ -1,4 +1,4 @@
-# pcie-switch-rescan
+# Fix Missing NICs and NVMe on RK3588 + PCIe Switch HATs
 
 A kernel module that fixes PCIe device detection on RK3588 boards using PCIe switches like the ASMedia ASM2806.
 
@@ -105,6 +105,23 @@ The RK3588 has multiple PCIe controllers. The one typically used with HATs like 
 The DWC (DesignWare) PCIe controller's probe path in `pcie-dw-rockchip.c` calls `rockchip_pcie_start_link()`, waits for the upstream link (up to 900ms), then immediately calls `pci_host_probe()` which enumerates everything. There's no mechanism to wait for downstream switch ports to finish training.
 
 This is arguably a kernel bug — `pci_rescan_bus()` should write bridge windows to hardware, not just track them internally. But since `CONFIG_PCIE_ROCKCHIP_DW=y` (built-in, not a module), we can't patch the driver without rebuilding the entire kernel. This module is a targeted fix that works with stock Armbian kernels.
+
+## Performance
+
+Benchmarks from a Rock 5C with the Radxa Dual 2.5G Router HAT. The NVMe drive is a TEAMGROUP TM8FP6512G (512GB, DRAM-less) connected through the ASM2806 switch at PCIe Gen3 x1 (the switch only provides a single lane per downstream port). All tests run with fio using the libaio engine and direct I/O.
+
+### NVMe (via PCIe switch, Gen3 x1)
+
+| Test | Result |
+|------|--------|
+| Sequential read (1M, QD32) | 203 MB/s |
+| Sequential write (1M, QD32) | 198 MB/s |
+| Random 4K read (QD32) | 50,400 IOPS (197 MB/s) |
+| Random 4K write (QD32) | 38,300 IOPS (150 MB/s) |
+| Random 4K read (QD1, latency) | 8,283 IOPS, 115 us avg |
+| Mixed random 4K 70/30 (QD32) | 40.2K read + 17.3K write IOPS |
+
+The sequential numbers are capped by the Gen3 x1 link (~985 MB/s theoretical, ~200 MB/s practical with switch overhead). The random 4K numbers are solid for a DRAM-less drive behind a PCIe switch — comparable to what you'd see from this drive on a direct connection.
 
 ## Authorship
 
